@@ -1,0 +1,26 @@
+    {
+    "identifier": [
+    {
+        "system": "urn:oid:1.2.36.146.595.217.0.1",
+        "value": "12345"
+    }
+    ],
+    "name": [
+    {
+        "family": [
+            "Chalmers"
+        ],
+        "given": [
+            "Peter",
+            "James"
+        ]
+    }
+    ],
+    "telecom": [
+        {
+        "system": "phone",
+        "value": "(03) 5555 6473",
+        "use": "work"
+        }
+        ]
+    }
