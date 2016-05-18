@@ -36,13 +36,16 @@ func usage(){
     log.Fatalf("Usage:[-s server (%s)] [-sub subject]\n", nats.DefaultURL)
 }
 
+// Convert raw data into go structs
 func convertToPatient(raw []byte) Patient {
     patient := Patient{}
     json.Unmarshal(raw, &patient)
     return patient
 }
 
+// Insert go struct into mongo
 func insertDoc(p Patient) {
+    // Opening a session
     session, err := mgo.Dial("localhost")
     if err != nil {
         panic(err)
@@ -59,6 +62,7 @@ func insertDoc(p Patient) {
     }
 }
 
+// A function to handle incoming JSON message
 func handleMsg(m *nats.Msg, i int) {
     log.Printf("[#%d] Received on [%s]:\n %s\n", i, m.Subject, string(m.Data))
     patient := convertToPatient(m.Data)
@@ -66,6 +70,7 @@ func handleMsg(m *nats.Msg, i int) {
 }
 
 func main(){
+    // Setting up command-line flags and they're default values
     var urls = flag.String("s", nats.DefaultURL, "nats server URLs")
     var sub = flag.String("sub", "CVDMC", "subject to publish/subscribe on")
 
@@ -78,6 +83,7 @@ func main(){
         log.Fatalf("Can't connect: %v\n", err)
     }
 
+    // Subscribe to the subject, i is a counter for number of message received
     i := 0
     nc.Subscribe(*sub, func(msg *nats.Msg) {
 		i += 1
