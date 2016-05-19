@@ -52,7 +52,7 @@ func handleMsg(m *nats.Msg, i int) {
 }
 
 func main(){
-    // Setting up command-line flags and they're default values
+    // Setting up command-line flags and default values
     var urls = flag.String("s", nats.DefaultURL, "nats server URLs")
     var sub = flag.String("sub", "CVDMC", "subject to publish/subscribe on")
 
