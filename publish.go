@@ -8,12 +8,12 @@ import (
 )
 
 func usage(){
-    log.Fatalf("Usage: [-s server (%s)] [-sub subject]\n", nats.DefaultURL)
+    log.Fatalf("Usage: [-s server (%s)] [-sub subject] <file>\n", nats.DefaultURL)
 }
 
 // This function reads from a text file and returns the raw data of JSON
-func getRaw() []byte {
-    raw, err := ioutil.ReadFile("data.json")
+func getRaw(fpath string) []byte {
+    raw, err := ioutil.ReadFile(fpath)
     if err != nil {
         panic(err)
     }
@@ -30,6 +30,11 @@ func main(){
     flag.Usage = usage
     flag.Parse()
 
+	args := flag.Args()
+	if len(args) < 1 {
+		usage()
+	}
+
     // Connects to nats server
     nc, err := nats.Connect(*urls)
     if err != nil {
@@ -37,7 +42,7 @@ func main(){
     }
     defer nc.Close()
 
-    msg := getRaw()
+    msg := getRaw(args[0])
 
     // Publish the data
     nc.Publish(*sub, msg)
