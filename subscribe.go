@@ -10,41 +10,23 @@ import (
     "encoding/json"
 )
 
-type Patient struct {
-    Identifiers []Identifier    `json:"identifier"`
-    Names []Name     `json:"name"`
-    Telecoms []Telecom   `json:"telecom"`
-}
-
-type Identifier struct {
-    System string   `json:"system"`
-    Value string    `json:"value"`
-}
-
-type Name struct {
-    Family []string     `json:"family"`
-    Given []string      `json:"given"`
-}
-
-type Telecom struct {
-    System string    `json:"system"`
-    Value string    `json:"value"`
-    Use string  `json:"use"`
-}
-
 func usage(){
     log.Fatalf("Usage:[-s server (%s)] [-sub subject]\n", nats.DefaultURL)
 }
 
-// Convert raw data into go structs
-func convertToPatient(raw []byte) Patient {
-    patient := Patient{}
-    json.Unmarshal(raw, &patient)
-    return patient
+// Convert raw data to map[string]interface
+func convertToMap(raw []byte) map[string]interface{} {
+	var ma map[string]interface{}
+	err:= json.Unmarshal(raw, &ma)
+	if err != nil {
+		panic(err)
+		}
+	return ma
+
 }
 
-// Insert go struct into mongo
-func insertDoc(p Patient) {
+// Insert the map into mongo
+func insertDoc(ma interface{}) {
     // Opening a session
     session, err := mgo.Dial("localhost")
     if err != nil {
@@ -55,7 +37,7 @@ func insertDoc(p Patient) {
     session.SetMode(mgo.Monotonic, true)
 
     c:= session.DB("resource").C("patient")
-    err = c.Insert(&p)
+    err = c.Insert(&ma)
 
     if err != nil {
         log.Fatal(err)
@@ -65,8 +47,8 @@ func insertDoc(p Patient) {
 // A function to handle incoming JSON message
 func handleMsg(m *nats.Msg, i int) {
     log.Printf("[#%d] Received on [%s]:\n %s\n", i, m.Subject, string(m.Data))
-    patient := convertToPatient(m.Data)
-    insertDoc(patient)
+	ma := convertToMap(m.Data)
+    insertDoc(ma)
 }
 
 func main(){
