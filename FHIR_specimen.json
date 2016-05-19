@@ -1,0 +1,46 @@
+
+{
+    "resourceType":"Bundle",
+    "id":"not-a-real-id",
+    "meta":{
+        "lastUpdated":"2016-03-03T15:24:52.163-04:00"
+    },
+    "type":"searchset",
+    "base":"http://example.ca:8080/firbank/fhir",
+    "total":1,
+    "link":[
+        {
+            "relation":"self",
+            "url":"http://example.ca:8080/firbank/fhir/Specimen?subject.identifier=9871234"
+        }
+    ],
+    "entry":[
+        {
+            "resource":{
+                "resourceType":"Specimen",
+                "id":"1234",
+                "text":{
+                    "status":"generated",
+                    "div":"<div>This is the narrative text<br/>this is line 2</div>"
+                },
+                "type":{
+                    "coding":[
+                        {
+                            "code":"Fixed Tissue Block"
+                        }
+                    ]
+                },
+                "collection":{
+                    "bodySiteCodeableConcept":{
+                        "coding":[
+                            {
+                                "system":"code",
+                                "code":"Valve"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
