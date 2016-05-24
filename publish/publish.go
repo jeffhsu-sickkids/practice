@@ -8,6 +8,15 @@ import (
 	"log"
 )
 
+// see: https://gobyexample.com/errors
+type CodedError struct {
+	msg  string
+	Code int // an integer code for this error
+}
+
+// CodedError implements the error interface with this
+func (e *CodedError) Error() string { return e.msg }
+
 func usage() {
 	log.Fatalf("Usage: [-s server (%s)] [-sub subject] <file>\n", nats.DefaultURL)
 }
@@ -16,7 +25,9 @@ func usage() {
 func getRaw(fpath string) ([]byte, error) {
 	raw, err := ioutil.ReadFile(fpath)
 	if err != nil {
-		return nil, err
+		//ce := CodedError{msg: err.Error(), Code: 5}
+		// return a pointer to a struct that implements the error interface:
+		return nil, &CodedError{msg: err.Error(), Code: 5}
 	}
 	return raw, nil
 }
