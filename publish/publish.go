@@ -5,6 +5,7 @@ import (
 	"log"
 	"github.com/nats-io/nats"
     "io/ioutil"
+	"os"
 )
 
 func usage(){
@@ -15,7 +16,16 @@ func usage(){
 func getRaw(fpath string) []byte {
     raw, err := ioutil.ReadFile(fpath)
     if err != nil {
-        panic(err)
+		switch {
+		case os.IsPermission(err):
+			log.Printf("Permission is denied")
+			os.Exit(2)
+		case os.IsNotExist(err):
+			log.Printf("File is not found")
+			os.Exit(2)
+		default:
+			panic(err)
+		}
     }
     return raw
 }
