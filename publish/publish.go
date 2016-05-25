@@ -20,7 +20,7 @@ type CodedError struct {
 func (e *CodedError) Error() string { return e.msg }
 
 func usage() {
-	log.Fatalf("Usage: [-s server (%s)] [-sub subject] <file>\n", nats.DefaultURL)
+	log.Fatalf("Usage: [-s server (%s)] [-subj subject] <file>\n", nats.DefaultURL)
 }
 
 func isJSON(b []byte) bool {
@@ -54,7 +54,7 @@ func main() {
 
 	// Defining command-line flags and default values
 	var urls = flag.String("s", nats.DefaultURL, "nats server URLs")
-	var sub = flag.String("sub", "CVDMC", "subject to publish/subscribe on")
+	var subj = flag.String("subj", "CVDMC", "subject to publish/subscribe on")
 
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -67,13 +67,13 @@ func main() {
 
 	var fileName string = args[0]
 
-	err := pub(urls, sub, fileName)
+	err := pub(urls, subj, fileName)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func pub(urls *string, sub *string, fileName string) error {
+func pub(urls *string, subj *string, fileName string) error {
 
 	// Connects to nats server
 	nc, err := nats.Connect(*urls)
@@ -89,10 +89,10 @@ func pub(urls *string, sub *string, fileName string) error {
 	}
 
 	// Publish the data
-	nc.Publish(*sub, msg)
+	nc.Publish(*subj, msg)
 	nc.Flush()
 
-	log.Printf("Published [%s] : '%s'\n", *sub, msg)
+	log.Printf("Published [%s] : '%s'\n", *subj, msg)
 
 	return nil
 }

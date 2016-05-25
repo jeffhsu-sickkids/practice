@@ -11,7 +11,7 @@ import (
 )
 
 func usage(){
-    log.Fatalf("Usage:[-s server (%s)] [-sub subject] [-id docID]\n", nats.DefaultURL)
+    log.Fatalf("Usage:[-s server (%s)] [-subj subject] [-id docID]\n", nats.DefaultURL)
 }
 
 func readDoc(query bson.M) map[string]interface{} {
@@ -40,7 +40,7 @@ func readDoc(query bson.M) map[string]interface{} {
 func main() {
     // Defining command-line flags and default values
     var urls = flag.String("s", nats.DefaultURL, "nats server URLs")
-    var sub = flag.String("sub", "r.CVDMC", "subject to publish/subscribe on")
+    var subj = flag.String("subj", "r.CVDMC", "subject to publish/subscribe on")
     var id = flag.String("id", "", "ID of target document in mongo")
 
     log.SetFlags(0)
@@ -67,10 +67,10 @@ func main() {
     }
 
     // Publish the data
-    nc.Publish(*sub, msg)
+    nc.Publish(*subj, msg)
     nc.Flush()
 
-    log.Printf("Published [%s] : '%s'\n", *sub, msg)
+    log.Printf("Published [%s] : '%s'\n", *subj, msg)
 
 
 }

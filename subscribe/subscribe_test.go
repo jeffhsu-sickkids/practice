@@ -15,7 +15,7 @@ func TestConvertMap(t *testing.T) {
             "Morticia",
         },
     }
-    if result := convertToMap(b); reflect.DeepEqual(result, m){
+    if result := convertToMap(b); reflect.DeepEqual(result, f){
         t.Error("expected", f, "got", result)
     }
 }

@@ -10,8 +10,17 @@ import (
     "encoding/json"
 )
 
+// see: https://gobyexample.com/errors
+type CodedError struct {
+	msg  string
+	Code int // an integer code for this error
+}
+
+// CodedError implements the error interface with this
+func (e *CodedError) Error() string { return e.msg }
+
 func usage(){
-    log.Fatalf("Usage:[-s server (%s)] [-sub subject]\n", nats.DefaultURL)
+    log.Fatalf("Usage:[-s server (%s)] [-subj subject]\n", nats.DefaultURL)
 }
 
 // Convert raw data to map[string]interface
@@ -54,25 +63,35 @@ func handleMsg(m *nats.Msg, i int) {
 func main(){
     // Setting up command-line flags and default values
     var urls = flag.String("s", nats.DefaultURL, "nats server URLs")
-    var sub = flag.String("sub", "CVDMC", "subject to publish/subscribe on")
+    var subj = flag.String("subj", "CVDMC", "subject to publish/subscribe on")
 
     log.SetFlags(0)
     flag.Usage = usage
     flag.Parse()
 
-    nc, err := nats.Connect(*urls)
-    if err != nil {
-        log.Fatalf("Can't connect: %v\n", err)
-    }
+	err := sub(urls, subj)
+	if err != nil {
+		panic(err)
+	}
 
-    // Subscribe to the subject, i is a counter for number of message received
-    i := 0
-    nc.Subscribe(*sub, func(msg *nats.Msg) {
+}
+
+func sub(urls *string, subj *string) error {
+	nc, err := nats.Connect(*urls)
+	if err != nil {
+		log.Fatal(err)
+		return &CodedError{msg: err.Error(), Code: 3}
+	}
+
+	// Subscribe to the subject, i is a counter for number of message received
+	i := 0
+	nc.Subscribe(*subj, func(msg *nats.Msg) {
 		i += 1
 		handleMsg(msg, i)
 	})
 
-    log.Printf("Listening on [%s]\n", *sub)
-    runtime.Goexit()
+	log.Printf("Listening on [%s]\n", *subj)
+	runtime.Goexit()
 
+	return nil
 }
