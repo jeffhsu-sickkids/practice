@@ -1,11 +1,13 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"github.com/nats-io/nats"
 	"io/ioutil"
 	"log"
+	"os"
+	"bytes"
+	"encoding/json"
 )
 
 // see: https://gobyexample.com/errors
@@ -21,13 +23,29 @@ func usage() {
 	log.Fatalf("Usage: [-s server (%s)] [-sub subject] <file>\n", nats.DefaultURL)
 }
 
+func isJSON(b []byte) bool {
+    var js map[string]interface{}
+    return json.Unmarshal(b, &js) == nil
+}
+
 // This function reads from a text file and returns the raw data of JSON
 func getRaw(fpath string) ([]byte, error) {
 	raw, err := ioutil.ReadFile(fpath)
 	if err != nil {
-		//ce := CodedError{msg: err.Error(), Code: 5}
 		// return a pointer to a struct that implements the error interface:
-		return nil, &CodedError{msg: err.Error(), Code: 5}
+		switch {
+			case os.IsPermission(err):
+				return nil, &CodedError{msg: err.Error(), Code: 4}
+				os.Exit(2)
+			case os.IsNotExist(err):
+				return nil, &CodedError{msg: err.Error(), Code: 5}
+			default:
+				return nil, &CodedError{msg: err.Error(), Code: 1}
+		}
+	} else if len(bytes.TrimSpace(raw)) == 0 {
+		return nil, &CodedError{msg: "File is empty", Code: 2}
+	} else if !isJSON(raw) {
+		return nil, &CodedError{msg: "Invalid JSON", Code: 6}
 	}
 	return raw, nil
 }
@@ -49,7 +67,10 @@ func main() {
 
 	var fileName string = args[0]
 
-	_ = pub(urls, sub, fileName)
+	err := pub(urls, sub, fileName)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func pub(urls *string, sub *string, fileName string) error {
@@ -58,7 +79,7 @@ func pub(urls *string, sub *string, fileName string) error {
 	nc, err := nats.Connect(*urls)
 	if err != nil {
 		log.Fatal(err)
-		return errors.New("a problem with connecting to NATS")
+		return &CodedError{msg: err.Error(), Code: 3}
 	}
 	defer nc.Close()
 
